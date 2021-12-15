@@ -1,0 +1,102 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-12-05 00:16+0300\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=4; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<12 || n%100>14) ? 1 : n%10==0 || (n%10>=5 && n%10<=9) || (n"
+"%100>=11 && n%100<=14)? 2 : 3);\n"
+
+#: recipes/apps.py:8
+msgctxt "Recipes"
+msgid "Recipes"
+msgstr "Рецепты"
+
+#: recipes/models.py:10 recipes/models.py:23 recipes/models.py:51
+msgid "name"
+msgstr "Имя"
+
+#: recipes/models.py:12
+msgid "slug"
+msgstr ""
+
+#: recipes/models.py:24
+msgid "unit"
+msgstr "единица"
+
+#: recipes/models.py:36
+msgid "counts"
+msgstr "количество"
+
+#: recipes/models.py:46
+msgid "author"
+msgstr "автор"
+
+#: recipes/models.py:47
+msgid "recipes"
+msgstr "рецепты"
+
+#: recipes/models.py:49
+msgid "tags"
+msgstr "тэг"
+
+#: recipes/models.py:50
+msgid "image"
+msgstr "картинка"
+
+#: recipes/models.py:52
+msgid "text"
+msgstr "текст"
+
+#: recipes/models.py:53
+msgid "cooking time"
+msgstr "время готовки"
+
+#: recipes/models.py:55
+msgid "ingredients"
+msgstr "ингредиенты"
+
+#: recipes/models.py:55
+msgid "recipe"
+msgstr "рецепт"
+
+#: users/apps.py:8
+msgid "User"
+msgstr "Пользователь"
+
+#: users/forms.py:21
+msgid "You cannot subscribe to yourself"
+msgstr "Вы не можете подписаться на себя"
+
+#: users/models.py:8
+msgid "email address"
+msgstr "Адрес электронной почты"
+
+#: users/models.py:17
+msgid "subscriber"
+msgstr "подписчик"
+
+#: users/models.py:22
+msgid "subscribed"
+msgstr "подписан"
+
+#: users/models.py:34
+msgid "Subscribe models"
+msgstr "Модель подписки"
+
+#: users/models.py:35
+msgid "Subscribe model"
+msgstr "Модели подписки"
