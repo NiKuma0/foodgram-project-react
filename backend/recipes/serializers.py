@@ -3,8 +3,8 @@ from rest_framework import serializers as serial
 from drf_base64.fields import Base64ImageField
 
 from tools.serializers import DynamicFieldsModelSerializer
-from .fields import SerializerRaelatedField, Tag
-from .models import TagModel, RecipeModel, IngredientModel, CountModel
+from recipes.fields import SerializerRaelatedField, Tag
+from recipes.models import TagModel, RecipeModel, IngredientModel, CountModel
 
 
 class TagSerializer(serial.ModelSerializer):

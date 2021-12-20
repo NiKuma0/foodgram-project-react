@@ -26,9 +26,7 @@ class SerializerRaelatedField(serializers.RelatedField):
         serializer.is_valid(raise_exception=True)
         if not self.create:
             data = serializer .validated_data
-            print(data)
             return self.model.objects.get(**data)
-        # print(serializer)
         serializer.save()
         return serializer.instance
 

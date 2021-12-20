@@ -1,6 +1,5 @@
 import random as rnd
 import tempfile
-# import base64
 from io import BytesIO
 from PIL import Image
 from shutil import rmtree

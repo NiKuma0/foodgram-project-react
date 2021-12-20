@@ -1,7 +1,7 @@
 from rest_framework.routers import DefaultRouter
 from django.urls import path, include
 
-from .views import DynamicUserViewSet, SubscribeViewSet
+from users.views import DynamicUserViewSet, SubscribeViewSet
 
 router = DefaultRouter()
 router.register('users', DynamicUserViewSet, basename='user')

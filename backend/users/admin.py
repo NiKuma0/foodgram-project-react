@@ -1,8 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from .forms import SubscribeForm
-from .models import SubcribeModel, User
+from users.forms import SubscribeForm
+from users.models import SubcribeModel, User
 
 
 @admin.register(SubcribeModel)

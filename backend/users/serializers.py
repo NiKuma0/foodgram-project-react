@@ -4,7 +4,7 @@ from rest_framework import serializers
 
 from tools.serializers import DynamicFieldsModelSerializer
 from recipes.serializers import RecipeSerializer
-from .models import SubcribeModel
+from users.models import SubcribeModel
 
 User = get_user_model()
 

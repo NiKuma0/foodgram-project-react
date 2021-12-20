@@ -5,12 +5,12 @@ from rest_framework import filters, permissions as perm
 from rest_framework.viewsets import ModelViewSet
 from django_filters.rest_framework import DjangoFilterBackend
 
-from .serializers import (
+from recipes.serializers import (
     TagSerializer, IngredientSerializer, RecipeSerializer, PostRecipeSerializer
 )
 from tools.views import GetViewSet, FromToViewSet
-from .filters import RecipeFilter
-from .models import (
+from recipes.filters import RecipeFilter
+from recipes.models import (
     TagModel, RecipeModel, IngredientModel,
     FavoriteModel, ShoppingCartModel
 )

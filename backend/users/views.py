@@ -3,8 +3,8 @@ from rest_framework import status, viewsets
 from rest_framework.response import Response
 from djoser.views import UserViewSet
 
-from .models import SubcribeModel
-from .serializers import SubSerializer, UserSerializer
+from users.models import SubcribeModel
+from users.serializers import SubSerializer, UserSerializer
 from tools.views import FromToViewSet
 
 User = get_user_model()
