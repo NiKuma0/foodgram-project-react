@@ -71,10 +71,7 @@ const Favorites = ({ updateOrders }) => {
       <Pagination
         count={recipesCount}
         limit={6}
-<<<<<<< HEAD
-=======
         page={recipesPage}
->>>>>>> template/master
         onPageChange={page => setRecipesPage(page)}
       />
     </Container>
