@@ -15,10 +15,26 @@
   user-select: none;
   cursor: pointer;
   width: max-content;
+<<<<<<< HEAD
+=======
+  box-sizing: border-box;
+>>>>>>> template/master
 }
 
 .button:active {
   box-shadow: 0 0 7px #ddd;
+}
+
+.button_style_light {
+  border: 1px solid #DEE2F2;
+  background: #FFF;
+  color: #4A61DD;
+}
+
+.button_style_light:hover {
+  background: #D8DEFF;
+  color: #4A61DD;
+  border: 1px solid transparent;
 }
 
 .button_style_light-blue {
