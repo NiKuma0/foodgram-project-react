@@ -2,10 +2,10 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
 from users.forms import SubscribeForm
-from users.models import SubcribeModel, User
+from users.models import Subcribe, User
 
 
-@admin.register(SubcribeModel)
+@admin.register(Subcribe)
 class SubscribeAdmin(admin.ModelAdmin):
     list_display = ('subscriber', 'subscribed', 'id')
     search_field = ('subscriber', 'subscribed', 'id')

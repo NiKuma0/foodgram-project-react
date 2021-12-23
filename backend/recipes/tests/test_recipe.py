@@ -11,7 +11,7 @@ from django.test import override_settings
 from rest_framework.test import APIClient, APITestCase
 from rest_framework import status
 
-from recipes.models import RecipeModel, TagModel, IngredientModel, CountModel
+from recipes.models import Recipe, Tag, Ingredient, Count
 from tools.tests import base_test, check_db_test
 
 MEDIA = tempfile.mktemp()
@@ -67,26 +67,26 @@ class RecipeTestAPI(APITestCase):
                 cls.images.append(
                     b.getvalue()
                 )
-        tags = TagModel.objects.bulk_create([
-            TagModel(
+        tags = Tag.objects.bulk_create([
+            Tag(
                 id=num, name=f'тэг{num}',
                 slug=f'tag{num}', color=hex(num)
             ) for num in range(100)
         ])
-        ingredients = IngredientModel.objects.bulk_create([
-            IngredientModel(
+        ingredients = Ingredient.objects.bulk_create([
+            Ingredient(
                 name=f'ингридиент {num}', id=num,
                 measurement_unit=rnd.choice(('кг', 'г', 'шт')),
             ) for num in range(100)
         ])
-        counts = CountModel.objects.bulk_create([
-            CountModel(
+        counts = Count.objects.bulk_create([
+            Count(
                 id=num, ingredient=ingredients[num],
                 amount=num
             ) for num in range(100)
         ])
-        recipes = RecipeModel.objects.bulk_create([
-            RecipeModel(
+        recipes = Recipe.objects.bulk_create([
+            Recipe(
                 id=num, author=cls.user,
                 # tags=[tags[num]], ingredients=[counts[num]],
                 image=SimpleUploadedFile(
@@ -117,7 +117,7 @@ class RecipeTestAPI(APITestCase):
                 },
                 {
                     'http': HTTPStatus.OK,
-                    **data_maping(RecipeModel.objects.all())
+                    **data_maping(Recipe.objects.all())
                 }
             ),
         ),
@@ -130,7 +130,7 @@ class RecipeTestAPI(APITestCase):
         #         res_data = responce.json()
         #         self.assertEqual(res_data['results'], ans['data'])
 
-    @check_db_test(RecipeModel, True)
+    @check_db_test(Recipe, True)
     def test_post(self):
         url = '/api/recipes/'
         requests = (
@@ -177,7 +177,7 @@ class RecipeTestAPI(APITestCase):
     @classmethod
     def tearDownClass(cls):
         rmtree(MEDIA, ignore_errors=True)
-        RecipeModel.objects.all().delete()
-        TagModel.objects.all().delete()
-        CountModel.objects.all().delete()
-        IngredientModel.objects.all().delete()
+        Recipe.objects.all().delete()
+        Tag.objects.all().delete()
+        Count.objects.all().delete()
+        Ingredient.objects.all().delete()

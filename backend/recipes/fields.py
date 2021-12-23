@@ -34,7 +34,7 @@ class SerializerRaelatedField(serializers.RelatedField):
         return self.model.objects.all()
 
 
-class Tag(serializers.ListField):
+class TagField(serializers.ListField):
     def __init__(self, model, *args, **kwargs):
         self.Model = model
         super().__init__(*args, **kwargs)

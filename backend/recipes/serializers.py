@@ -3,20 +3,74 @@ from rest_framework import serializers as serial
 from drf_base64.fields import Base64ImageField
 
 from tools.serializers import DynamicFieldsModelSerializer
-from recipes.fields import SerializerRaelatedField, Tag
-from recipes.models import TagModel, RecipeModel, IngredientModel, CountModel
+from tools.validators import unique_object
+from recipes.fields import SerializerRaelatedField, TagField
+from recipes.models import (
+    Recipe, Count, Ingredient,
+    Favorite, ShoppingCart, Tag
+)
+
+
+class FavoriteSerializer(serial.ModelSerializer):
+    user = serial.HiddenField(
+        default=serial.CurrentUserDefault()
+    )
+
+    class Meta:
+        model = Favorite
+        fields = '__all__'
+        validators = (
+            unique_object(
+                Favorite.objects.all(),
+                'user', 'recipes',
+                _('You already have this recipe in your favorites')
+            ),
+        )
+
+    @property
+    def data(self):
+        return RecipeSerializer(
+            instance=self.validated_data['recipes'],
+            fields=('id', 'name', 'image', 'cooking_time'),
+            context=self.context
+        ).data
+
+
+class ShopingCartSerializer(serial.ModelSerializer):
+    user = serial.HiddenField(
+        default=serial.CurrentUserDefault()
+    )
+
+    class Meta:
+        model = ShoppingCart
+        fields = '__all__'
+        validators = (
+            unique_object(
+                ShoppingCart.objects.all(),
+                'user', 'recipe',
+                _('You already have this recipe in your shop cart')
+            ),
+        )
+
+    @property
+    def data(self):
+        return RecipeSerializer(
+            instance=self.validated_data['recipe'],
+            fields=('id', 'name', 'image', 'cooking_time'),
+            context=self.context
+        ).data
 
 
 class TagSerializer(serial.ModelSerializer):
     class Meta:
-        model = TagModel
+        model = Tag
         fields = '__all__'
         read_only_fields = ('name', 'color', 'slug',)
 
 
 class IngredientSerializer(serial.ModelSerializer):
     class Meta:
-        model = IngredientModel
+        model = Ingredient
         fields = '__all__'
 
 
@@ -26,7 +80,7 @@ class CountSerializer(serial.ModelSerializer):
     amount = serial.IntegerField(required=True)
 
     class Meta:
-        model = CountModel
+        model = Count
         fields = ('amount', 'ingredient', 'id')
 
     def to_internal_value(self, data):
@@ -34,10 +88,10 @@ class CountSerializer(serial.ModelSerializer):
         errors = {}
         try:
             pk = field.run_validation(data.pop('id'))
-            ingredient = IngredientModel.objects.get(pk=pk)
+            ingredient = Ingredient.objects.get(pk=pk)
         except serial.ValidationError as exc:
             errors[field.field_name] = exc.detail
-        except IngredientModel.DoesNotExist:
+        except Ingredient.DoesNotExist:
             raise serial.ValidationError(
                 f'ingredient {pk}',
                 _('Not found')
@@ -54,28 +108,31 @@ class CountSerializer(serial.ModelSerializer):
 
 
 class RecipeSerializer(DynamicFieldsModelSerializer):
-    tags = TagSerializer(many=True)
-    author = serial.SerializerMethodField()
-    image = Base64ImageField()
-    ingredients = CountSerializer(
-        many=True
+    tags = TagField(Tag, child=TagSerializer())
+    ingredients = SerializerRaelatedField(
+        CountSerializer, create=True, many=True
     )
+    image = Base64ImageField(required=True)
+    author = serial.SerializerMethodField()
     is_favorited = serial.SerializerMethodField()
     is_in_shopping_cart = serial.SerializerMethodField()
 
     class Meta:
-        model = RecipeModel
+        model = Recipe
         fields = (
             'id', 'tags', 'ingredients',
             'image', 'name', 'text',
             'cooking_time', 'author',
             'is_favorited', 'is_in_shopping_cart'
         )
+        extra_kwargs = {'author': {'read_only': True}}
 
     def get_author(self, obj):
         from users.serializers import UserSerializer
         return UserSerializer(
-            instance=obj.author, context=self.context, exclude=('recipes',)
+            instance=obj.author, context=self.context,
+            exclude=self.context.get('author_exclude', ('recipes',)),
+            fields=self.context.get('author_fields', None)
         ).data
 
     def get_is_favorited(self, obj):
@@ -87,19 +144,3 @@ class RecipeSerializer(DynamicFieldsModelSerializer):
         user = self.context['request'].user
         b = obj.shop.all().filter(user=user.id).exists()
         return b
-
-
-class PostRecipeSerializer(serial.ModelSerializer):
-    tags = Tag(TagModel, child=TagSerializer())
-    ingredients = SerializerRaelatedField(
-        CountSerializer, create=True, many=True
-    )
-    image = Base64ImageField(required=True)
-
-    class Meta:
-        model = RecipeModel
-        fields = (
-            'author', 'tags', 'ingredients',
-            'image', 'name', 'text', 'cooking_time'
-        )
-        extra_kwargs = {'author': {'read_only': True}}

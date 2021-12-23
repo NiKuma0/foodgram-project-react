@@ -3,7 +3,7 @@ from rest_framework.test import APIClient, APITestCase
 from rest_framework import status
 
 from tools.tests import base_test, check_db_test, Text
-from users.models import SubcribeModel
+from users.models import Subcribe
 
 User = get_user_model()
 
@@ -36,13 +36,13 @@ class TestSubAPI(APITestCase):
         self.client2.force_authenticate(TestSubAPI.user2)
         self.client3.force_authenticate(TestSubAPI.user3)
 
-    @check_db_test(SubcribeModel)
+    @check_db_test(Subcribe)
     def test_sub(self):
         url = '/api/users/2/subscribe/'
         data = (
             {
                 'client': self.client1,
-                'method': 'get'
+                'method': 'post'
             },
             {
                 'http': status.HTTP_201_CREATED,
@@ -50,7 +50,7 @@ class TestSubAPI(APITestCase):
         ), (
             {
                 'client': self.client1,
-                'method': 'get',
+                'method': 'post',
             },
             {
                 'http': status.HTTP_400_BAD_REQUEST,
@@ -69,7 +69,7 @@ class TestSubAPI(APITestCase):
 
     @base_test
     def test_get_subs(self):
-        SubcribeModel.objects.create(
+        Subcribe.objects.create(
             subscriber=TestSubAPI.user1,
             subscribed=TestSubAPI.user2
         )
@@ -98,4 +98,4 @@ class TestSubAPI(APITestCase):
         return url, data
 
     def tearDown(self) -> None:
-        SubcribeModel.objects.all().delete()
+        Subcribe.objects.all().delete()

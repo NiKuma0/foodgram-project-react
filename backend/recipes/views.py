@@ -1,29 +1,67 @@
 import tempfile
 
 from django.http.response import HttpResponse
+from django.db.models import Sum
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, permissions as perm
 from rest_framework.viewsets import ModelViewSet
-from django_filters.rest_framework import DjangoFilterBackend
 
 from recipes.serializers import (
-    TagSerializer, IngredientSerializer, RecipeSerializer, PostRecipeSerializer
+    TagSerializer, IngredientSerializer, RecipeSerializer,
+    FavoriteSerializer, ShopingCartSerializer
 )
-from tools.views import GetViewSet, FromToViewSet
+from tools.views import GetViewSet, PkCreateViewSet
 from recipes.filters import RecipeFilter
 from recipes.models import (
-    TagModel, RecipeModel, IngredientModel,
-    FavoriteModel, ShoppingCartModel
+    Tag, Recipe, Ingredient, ShoppingCart
 )
+
+
+class FavoriteViewSet(PkCreateViewSet):
+    serializer_class = FavoriteSerializer
+    lookup_field = 'recipes'
+    lookup_url_kwarg = 'pk'
+
+    def get_queryset(self):
+        return self.request.user.favorites.all()
+
+
+class ShopingCartViewSet(PkCreateViewSet):
+    serializer_class = ShopingCartSerializer
+    lookup_field = 'recipe'
+    lookup_url_kwarg = 'pk'
+
+    def list(self, *args, **kwargs):
+        file = tempfile.NamedTemporaryFile()
+        file.write(self.get_content())
+        file.seek(0)
+        return HttpResponse(file, content_type='application/txt')
+
+    def get_content(self):
+        FORMAT = '{0.name} {0.amount} {0.measurement_unit};'
+        user = self.request.user
+        recipes = [
+            shop.recipe for shop in ShoppingCart.objects.filter(user=user)
+        ]
+        ingredients = Ingredient.objects.filter(
+            counts__recipe__in=recipes
+        )
+        cart = ingredients.annotate(amount=Sum('counts__amount'))
+        content = '\n'.join(map(FORMAT.format, cart))
+        return bytes(content, 'utf-8')
+
+    def get_queryset(self):
+        return self.request.user.cart.all()
 
 
 class TagViewSet(GetViewSet):
-    queryset = TagModel.objects.all()
+    queryset = Tag.objects.all()
     serializer_class = TagSerializer
     pagination_class = None
 
 
 class IngredientViewSet(GetViewSet):
-    queryset = IngredientModel.objects.all()
+    queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     pagination_class = None
     filter_backends = (filters.SearchFilter,)
@@ -31,63 +69,19 @@ class IngredientViewSet(GetViewSet):
 
 
 class RecipeViewSet(ModelViewSet):
-    queryset = RecipeModel.objects.all()
-    serializer_class = RecipeSerializer
-    post_serializer_class = PostRecipeSerializer
+    queryset = Recipe.objects.all()
     permission_classes = (perm.IsAuthenticatedOrReadOnly,)
+    serializer_class = RecipeSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-    def get_serializer_class(self):
-        if self.request.method in ('POST', 'PUT'):
-            return self.post_serializer_class
-        return self.serializer_class
-
     def get_object(self):
         return super().get_object()
 
-
-class FavoriteViewSet(FromToViewSet):
-    class Meta:
-        from_model = RecipeModel
-        to_model = FavoriteModel
-        expr = ('recipes', 'user')
-
-
-class ShoppingCartViewSet(FromToViewSet):
-    class Meta:
-        from_model = RecipeModel
-        to_model = ShoppingCartModel
-        expr = ('recipe', 'user')
-
-    def retrieve_data(self, obj: ShoppingCartModel):
-        serializer = RecipeSerializer(
-            instance=obj.recipe,
-            fields=('id', 'name', 'image', 'cooking_time')
-        )
-        return serializer.data
-
-    def list(self, request):
-        file = tempfile.NamedTemporaryFile()
-        file.write(self.get_content())
-        file.seek(0)
-        return HttpResponse(file, content_type='application/txt')
-
-    def get_content(self):
-        content = ''
-        column = {}
-        shop_cart = self.request.user.cart.all()
-        for shop_model in shop_cart:
-            ingredients = shop_model.recipe.ingredients.all()
-            for count_model in ingredients:
-                ingr = count_model.ingredient
-                column.setdefault(ingr.name, [0, ingr.measurement_unit])
-                column[ingr.name][0] += count_model.amount
-        for name, val in column.items():
-            content += (
-                '{} {} {}\n'.format(name, *val)
-            ) or 'пусто'
-        return bytes(content, 'utf-8')
+    def get_serializer_context(self):
+        data = super().get_serializer_context()
+        data['author_exclude'] = ('recipes', 'count_recipes')
+        return data

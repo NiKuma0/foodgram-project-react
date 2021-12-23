@@ -1,7 +1,7 @@
 from django_filters.rest_framework import FilterSet
 import django_filters as filters
 
-from recipes.models import RecipeModel, TagModel
+from recipes.models import Recipe, Tag
 
 
 class RecipeFilter(FilterSet):
@@ -11,14 +11,14 @@ class RecipeFilter(FilterSet):
     tags = filters.ModelMultipleChoiceFilter(
         field_name='tags__slug',
         to_field_name='slug',
-        queryset=TagModel.objects.all()
+        queryset=Tag.objects.all()
     )
     is_in_shopping_cart = filters.BooleanFilter(
         method='get_shop'
     )
 
     class Meta:
-        model = RecipeModel
+        model = Recipe
         fields = ('author', 'tags')
 
     def get_favorite(self, queryset, name, value):

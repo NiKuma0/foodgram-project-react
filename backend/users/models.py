@@ -7,10 +7,10 @@ from django.utils.translation import ugettext_lazy as _
 class User(AbstractUser):
     email = models.EmailField(_('email address'), unique=True)
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username']
+    REQUIRED_FIELDS = ('username',)
 
 
-class SubcribeModel(models.Model):
+class Subcribe(models.Model):
     subscriber = models.ForeignKey(
         User, on_delete=models.CASCADE,
         related_name='subscribed',

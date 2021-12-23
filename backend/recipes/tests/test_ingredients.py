@@ -3,7 +3,7 @@ import random as rnd
 from rest_framework.test import APIClient, APITestCase
 from rest_framework import status
 
-from recipes.models import IngredientModel
+from recipes.models import Ingredient
 
 
 class IngredientTestAPI(APITestCase):
@@ -11,12 +11,12 @@ class IngredientTestAPI(APITestCase):
     def setUpClass(cls) -> None:
         super().setUpClass()
         cls.ingredients = [
-            IngredientModel(
+            Ingredient(
                 name=f'ингридиент {num}', id=num,
                 measurement_unit=rnd.choice(('кг', 'г', 'шт')),
             ) for num in range(100)
         ]
-        IngredientModel.objects.bulk_create(cls.ingredients)
+        Ingredient.objects.bulk_create(cls.ingredients)
 
     def setUp(self) -> None:
         self.client = APIClient()
@@ -28,7 +28,7 @@ class IngredientTestAPI(APITestCase):
                 'id': obj.id,
                 'name': obj.name,
                 'measurement_unit': obj.measurement_unit,
-            } for obj in IngredientModel.objects.all()
+            } for obj in Ingredient.objects.all()
         ]
         with self.subTest(url=url):
             responce = self.client.get(url)
@@ -38,7 +38,7 @@ class IngredientTestAPI(APITestCase):
     def test_get_object(self):
         id = rnd.randint(0, 99)
         url = f'/api/ingredients/{id}/'
-        obj = IngredientModel.objects.get(id=id)
+        obj = Ingredient.objects.get(id=id)
         answer = {
             'id': obj.id,
             'name': obj.name,
@@ -51,4 +51,4 @@ class IngredientTestAPI(APITestCase):
 
     @classmethod
     def tearDownClass(cls):
-        IngredientModel.objects.all().delete()
+        Ingredient.objects.all().delete()

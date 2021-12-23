@@ -1,12 +1,10 @@
 from django.contrib.auth import get_user_model, base_user
 from rest_framework.test import APIClient, APITestCase
-from rest_framework import status, settings as set
+from rest_framework import status
 
 from tools.tests import base_test, CallInEq, check_db_test
 
-api_settings = set.APISettings(None, set.DEFAULTS, set.IMPORT_STRINGS)
 User: base_user.AbstractBaseUser = get_user_model()
-Token = api_settings.DEFAULT_AUTHENTICATION_CLASSES[0]
 
 
 class UserTestAPI(APITestCase):

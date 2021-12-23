@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient, APITestCase
 from rest_framework import status
 
-from recipes.models import FavoriteModel, RecipeModel
+from recipes.models import Favorite, Recipe
 from tools.tests import check_db_test
 
 User = get_user_model()
@@ -13,8 +13,8 @@ class FavoriteTestAPI(APITestCase):
     def setUpClass(cls) -> None:
         super().setUpClass()
         cls.user = User.objects.create(email='user@mail.com')
-        cls.ingredients = RecipeModel.objects.bulk_create([
-            RecipeModel(
+        cls.ingredients = Recipe.objects.bulk_create([
+            Recipe(
                 name=f'test{num}', id=num,
                 author=cls.user, cooking_time=1
             )
@@ -25,14 +25,14 @@ class FavoriteTestAPI(APITestCase):
         self.client = APIClient()
         self.client.force_authenticate(FavoriteTestAPI.user)
 
-    @check_db_test(FavoriteModel)
+    @check_db_test(Favorite)
     def test_get(self):
-        pk = RecipeModel.objects.all()[0].id
+        pk = Recipe.objects.all()[0].id
         url = f'/api/recipes/{pk}/favorite/'
         data = (
             {
                 'client': self.client,
-                'method': 'get'
+                'method': 'post'
             },
             {
                 'http': status.HTTP_201_CREATED
@@ -40,7 +40,7 @@ class FavoriteTestAPI(APITestCase):
         ), (
             {
                 'client': self.client,
-                'method': 'get'
+                'method': 'post'
             },
             {
                 'http': status.HTTP_400_BAD_REQUEST
@@ -66,5 +66,5 @@ class FavoriteTestAPI(APITestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
-        RecipeModel.objects.all().delete()
+        Recipe.objects.all().delete()
         User.objects.all().delete()

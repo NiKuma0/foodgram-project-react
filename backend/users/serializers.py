@@ -3,56 +3,46 @@ from django.utils.translation import ugettext_lazy as _
 from rest_framework import serializers
 
 from tools.serializers import DynamicFieldsModelSerializer
+from tools.validators import not_equal, unique_object
 from recipes.serializers import RecipeSerializer
-from users.models import SubcribeModel
+from users.models import Subcribe
 
 User = get_user_model()
 
 
-def sub_to_self(data):
-    user = data.get('user')
-    to = data.get('pk')
-    if user == to:
-        raise serializers.ValidationError(
-            _('You cannot subscribe to yourself'),
-            code='errors'
-        )
-
-
-def unique_subs(data):
-    user = data.get('user')
-    to = data.get('pk')
-    exists = SubcribeModel.objects.filter(
-        subscriber=user, subscribed=to
-    ).exists()
-    if exists:
-        raise serializers.ValidationError(
-            _('You have already subscribed'),
-            # code='errors'
-        )
-
-
-class SubSerializer(serializers.Serializer):
-    pk = serializers.PrimaryKeyRelatedField(
-        queryset=User.objects.all(), required=True
-    )
-    user = serializers.HiddenField(
+class SubSerializer(serializers.ModelSerializer):
+    subscriber = serializers.HiddenField(
         default=serializers.CurrentUserDefault()
     )
 
     class Meta:
-        validators = (sub_to_self, unique_subs)
+        model = Subcribe
+        fields = '__all__'
+        validators = (
+            not_equal(
+                'subscriber', 'subscribed',
+                _('You cannot subscribe to yourself')
+            ),
+            unique_object(
+                Subcribe.objects.all(),
+                'subscriber', 'subscribed',
+                _('You have already subscribed')
+            )
+        )
 
-    def create(self, validated_data):
-        user = validated_data.get('user')
-        to = validated_data.get('pk')
-        return SubcribeModel.objects.create(
-            subscriber=user, subscribed=to)
+    @property
+    def data(self):
+        return UserSerializer(
+            instance=self.validated_data['subscribed'],
+            context=self.context,
+            exclude=('is_subscribed',)
+        ).data
 
 
 class UserSerializer(DynamicFieldsModelSerializer):
     is_subscribed = serializers.SerializerMethodField(read_only=True)
     recipes = serializers.SerializerMethodField()
+    count_recipes = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -60,7 +50,7 @@ class UserSerializer(DynamicFieldsModelSerializer):
             'email', 'id', 'username',
             'first_name', 'last_name',
             'password', 'is_subscribed',
-            'recipes'
+            'recipes', 'count_recipes'
         )
         extra_kwargs = {
             'password': {'write_only': True, 'required': True, },
@@ -89,7 +79,6 @@ class UserSerializer(DynamicFieldsModelSerializer):
         except ValueError:
             pass
         serializer = RecipeSerializer(
-            # instance=obj.recipes.all()[:recipes_limit], many=True,
             instance=obj.recipes.all()[:recipes_limit], many=True,
             read_only=True, context={'request': request},
             **recipe_fields
@@ -100,6 +89,9 @@ class UserSerializer(DynamicFieldsModelSerializer):
         user = self.context['request'].user
         if not user.is_authenticated:
             return False
-        return SubcribeModel.objects.filter(
+        return Subcribe.objects.filter(
             subscriber=user.id, subscribed=obj.id
         ).exists()
+
+    def get_count_recipes(self, obj):
+        return obj.recipes.count()

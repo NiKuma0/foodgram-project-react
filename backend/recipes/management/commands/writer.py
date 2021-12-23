@@ -3,7 +3,7 @@ import csv
 import json
 
 from django.core.management.base import BaseCommand, CommandError
-from recipes.models import IngredientModel
+from recipes.models import Ingredient
 
 SUPP_EXTENSIONS = {
     '.csv': lambda *args, **kwargs: csv.DictReader(
@@ -35,11 +35,11 @@ class Command(BaseCommand):
         _, file_ext = os.path.splitext(file)
         if file_ext not in SUPP_EXTENSIONS:
             raise f'Not support extension {file_ext}'
-        writer(IngredientModel, file, file_ext, delete)
+        writer(Ingredient, file, file_ext, delete)
         print('Done!\n')
 
 
-def writer(model: IngredientModel, path: str, ext: str, delete=False) -> None:
+def writer(model: Ingredient, path: str, ext: str, delete=False) -> None:
     with open(path, newline='') as file:
         data = SUPP_EXTENSIONS[ext](file)
         if delete:

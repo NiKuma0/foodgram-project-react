@@ -3,7 +3,7 @@ import random as rnd
 from http import HTTPStatus
 from rest_framework.test import APIClient, APITestCase
 
-from recipes.models import TagModel
+from recipes.models import Tag
 
 
 class TagTestAPI(APITestCase):
@@ -11,19 +11,19 @@ class TagTestAPI(APITestCase):
     def setUpClass(cls) -> None:
         super().setUpClass()
         cls.tags = [
-            TagModel(
+            Tag(
                 id=num, name=f'тэг{num}',
                 slug=f'tag{num}', color=hex(num)
             ) for num in range(100)
         ]
-        TagModel.objects.bulk_create(cls.tags)
+        Tag.objects.bulk_create(cls.tags)
 
     def setUp(self) -> None:
         self.client = APIClient()
 
     def test_get_tags(self):
         url = '/api/tags/'
-        tags = TagModel.objects.all()
+        tags = Tag.objects.all()
         answer = [
             {
                 'id': tag.id, 'name': tag.name,
@@ -38,7 +38,7 @@ class TagTestAPI(APITestCase):
     def test_get_tag(self):
         id = rnd.randint(0, 99)
         url = f'/api/tags/{id}/'
-        tag = TagModel.objects.get(id=id)
+        tag = Tag.objects.get(id=id)
         answer = {
             'id': tag.id, 'name': tag.name,
             'slug': tag.slug, 'color': tag.color
@@ -50,4 +50,4 @@ class TagTestAPI(APITestCase):
 
     @classmethod
     def tearDownClass(cls):
-        TagModel.objects.all().delete()
+        Tag.objects.all().delete()

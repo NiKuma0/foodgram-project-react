@@ -2,12 +2,12 @@ from django.forms import ModelForm
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 
-from users.models import SubcribeModel
+from users.models import Subcribe
 
 
 class SubscribeForm(ModelForm):
     class Meta:
-        model = SubcribeModel
+        model = Subcribe
         fields = ('subscriber', 'subscribed')
 
     def clean(self):

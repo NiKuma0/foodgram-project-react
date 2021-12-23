@@ -1,19 +1,19 @@
 from django.contrib import admin
 
 from recipes.models import (
-    TagModel, RecipeModel, IngredientModel,
-    CountModel, FavoriteModel, ShoppingCartModel
+    Tag, Recipe, Ingredient,
+    Count, Favorite, ShoppingCart
 )
 
 
-@admin.register(TagModel)
+@admin.register(Tag)
 class AdminTag(admin.ModelAdmin):
     list_display = ('name', 'slug', 'color', 'id')
     search_field = ('name', 'slug')
     prepopulated_fields = {'slug': ('name',), }
 
 
-@admin.register(RecipeModel)
+@admin.register(Recipe)
 class AdminRecipe(admin.ModelAdmin):
     list_display = (
         'author', 'name', 'id'
@@ -22,25 +22,25 @@ class AdminRecipe(admin.ModelAdmin):
     filter_field = ('author', 'cooking_time')
 
 
-@admin.register(IngredientModel)
+@admin.register(Ingredient)
 class AdminIngredient(admin.ModelAdmin):
     list_display = ('name', 'measurement_unit', 'id')
     search_field = ('name',)
 
 
-@admin.register(CountModel)
+@admin.register(Count)
 class AdminCount(admin.ModelAdmin):
     list_display = ('ingredient', 'amount', 'id')
     search_field = ('ingredient',)
 
 
-@admin.register(FavoriteModel)
+@admin.register(Favorite)
 class AdminFavorite(admin.ModelAdmin):
     list_display = ('user', 'recipes')
     search_field = ('user',)
 
 
-@admin.register(ShoppingCartModel)
+@admin.register(ShoppingCart)
 class AdminShoppingCart(admin.ModelAdmin):
     list_display = ('user', 'recipe')
     search_field = ('user',)

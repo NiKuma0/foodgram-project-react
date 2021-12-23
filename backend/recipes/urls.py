@@ -4,7 +4,7 @@ from django.urls import path, include
 from recipes.views import (
     TagViewSet, RecipeViewSet,
     IngredientViewSet, FavoriteViewSet,
-    ShoppingCartViewSet
+    ShopingCartViewSet
 )
 
 tags_router = DefaultRouter()
@@ -18,15 +18,15 @@ urlpatterns = [
     path('', include(tags_router.urls)),
     path(
         'recipes/<int:pk>/favorite/',
-        FavoriteViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})
+        FavoriteViewSet.as_view({'post': 'create', 'delete': 'destroy'})
     ),
     path(
         'recipes/<int:pk>/shopping_cart/',
-        ShoppingCartViewSet.as_view({'get': 'retrieve', 'delete': 'destroy'})
+        ShopingCartViewSet.as_view({'post': 'create', 'delete': 'destroy'})
     ),
     path(
         'recipes/download_shopping_cart/',
-        ShoppingCartViewSet.as_view({'get': 'list'})
+        ShopingCartViewSet.as_view({'get': 'list'})
     ),
     path('', include(recipes_router.urls)),
     path('', include(ingredient_router.urls))
