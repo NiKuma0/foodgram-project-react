@@ -1,49 +1,29 @@
-import json
-
 from rest_framework import serializers
 
 
-class SerializerRaelatedField(serializers.RelatedField):
-    def __init__(self, serializer_class,
-                 create=True, model=None, **kwargs):
-        self.serializer_class = serializer_class
-        self.model = model or serializer_class.Meta.model
-        self.create = create
-        super().__init__(**kwargs)
-
-    def to_representation(self, value):
-        serializer = self.serializer_class(
-            instance=value
-        )
-        return serializer.data
-
-    def to_internal_value(self, data):
-        if isinstance(data, str):
-            data = json.loads(data.replace("'", "\""))
-        serializer: serializers.Serializer = self.serializer_class(
-            data=data
-        )
-        serializer.is_valid(raise_exception=True)
-        if not self.create:
-            data = serializer .validated_data
-            return self.model.objects.get(**data)
-        serializer.save()
-        return serializer.instance
-
-    def get_queryset(self):
-        return self.model.objects.all()
-
-
-class TagField(serializers.ListField):
-    def __init__(self, model, *args, **kwargs):
-        self.Model = model
+class TagField(serializers.PrimaryKeyRelatedField):
+    def __init__(self, child, *args, **kwargs):
+        self.child = child
         super().__init__(*args, **kwargs)
 
-    def to_internal_value(self, data):
-        return self.Model.objects.filter(pk__in=data)
-
     def to_representation(self, data):
-        return [
-            self.child.to_representation(item) if item is not None else None
-            for item in data.all()
-        ]
+        return self.child.to_representation(data)
+
+
+class SerializerField(serializers.Field):
+    def __init__(self, serializer_class, many=False, *args, **kwargs):
+        self.serializers_class = serializer_class
+        self.many = many
+        super().__init__(*args, **kwargs)
+
+    def get_serializer(self, *args, **kwargs):
+        return self.serializers_class(*args, **kwargs, many=self.many)
+
+    def to_representation(self, value):
+        return self.get_serializer(instance=value).data
+
+    def to_internal_value(self, data):
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        instance = serializer.save()
+        return instance

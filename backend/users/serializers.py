@@ -1,10 +1,9 @@
 from django.contrib.auth import get_user_model
-from django.utils.translation import ugettext_lazy as _
-from rest_framework import serializers
+from django.contrib.auth.models import AnonymousUser
+from django.utils.translation import gettext_lazy as _
+from rest_framework import serializers, validators as valid
 
-from tools.serializers import DynamicFieldsModelSerializer
-from tools.validators import not_equal, unique_object
-from recipes.serializers import RecipeSerializer
+from users.validators import not_equal
 from users.models import Subcribe
 
 User = get_user_model()
@@ -23,9 +22,9 @@ class SubSerializer(serializers.ModelSerializer):
                 'subscriber', 'subscribed',
                 _('You cannot subscribe to yourself')
             ),
-            unique_object(
+            valid.UniqueTogetherValidator(
                 Subcribe.objects.all(),
-                'subscriber', 'subscribed',
+                ('subscriber', 'subscribed'),
                 _('You have already subscribed')
             )
         )
@@ -39,18 +38,15 @@ class SubSerializer(serializers.ModelSerializer):
         ).data
 
 
-class UserSerializer(DynamicFieldsModelSerializer):
+class UserSerializer(serializers.ModelSerializer):
     is_subscribed = serializers.SerializerMethodField(read_only=True)
-    recipes = serializers.SerializerMethodField()
-    count_recipes = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = (
             'email', 'id', 'username',
             'first_name', 'last_name',
-            'password', 'is_subscribed',
-            'recipes', 'count_recipes'
+            'is_subscribed', 'password'
         )
         extra_kwargs = {
             'password': {'write_only': True, 'required': True, },
@@ -63,35 +59,40 @@ class UserSerializer(DynamicFieldsModelSerializer):
 
     def create(self, validated_data):
         password = validated_data.pop('password')
-        user: User = super().create(validated_data)
+        user = super().create(validated_data)
         user.set_password(password)
         user.save()
         return user
 
-    def get_recipes(self, obj):
-        request = self.context['request']
-        recipe_fields = self.context.get(
-            'recipe_fields', {'exclude': ('author',)}
-        )
-        try:
-            value = request.query_params.get('recipes_limit')
-            recipes_limit = value if value is None else int(value)
-        except ValueError:
-            pass
-        serializer = RecipeSerializer(
-            instance=obj.recipes.all()[:recipes_limit], many=True,
-            read_only=True, context={'request': request},
-            **recipe_fields
-        )
-        return serializer.data
-
-    def get_is_subscribed(self, obj):
-        user = self.context['request'].user
+    def get_is_subscribed(self, instance_user):
+        request = self.context.get('request')
+        user = getattr(request, 'user', AnonymousUser)
         if not user.is_authenticated:
             return False
         return Subcribe.objects.filter(
-            subscriber=user.id, subscribed=obj.id
+            subscriber=user.id, subscribed=instance_user.id
         ).exists()
 
-    def get_count_recipes(self, obj):
-        return obj.recipes.count()
+
+class VerboseUserSerializer(UserSerializer):
+    recipes = serializers.SerializerMethodField()
+    recipe_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = (
+            'email', 'id', 'username',
+            'first_name', 'last_name',
+            'recipes', 'recipe_count',
+            'is_subscribed',
+        )
+
+    def get_recipes(self, user):
+        from recipes.serializers import RecipeSerializer
+        return RecipeSerializer(
+            instance=user.recipes.all(), many=True,
+            context=self.context
+        ).data
+
+    def get_recipe_count(self, user):
+        return user.recipes.count()
