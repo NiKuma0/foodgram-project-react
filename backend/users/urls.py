@@ -13,7 +13,7 @@ urlpatterns = [
         SubscribeViewSet.as_view({'get': 'subscriptions'})
     ),
     path(
-        'users/<int:pk>/subscribe',
+        'users/<int:pk>/subscribe/',
         SubscribeViewSet.as_view({'post': 'subscribe', 'delete': 'destroy'})
     )
 ] + router.urls
