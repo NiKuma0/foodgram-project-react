@@ -10,11 +10,11 @@ from rest_framework.response import Response
 
 from recipes.serializers import (
     TagSerializer, IngredientSerializer, RecipeSerializer,
-    FavoriteSerializer, ShopingCartSerializer, VerboseRecipeSerializer
+    FavoriteSerializer, VerboseRecipeSerializer
 )
 from recipes.filters import RecipeFilter
 from recipes.models import (
-    Tag, Recipe, Ingredient
+    Tag, Recipe, Ingredient, ShoppingCart
 )
 
 
@@ -47,42 +47,42 @@ class FavoriteViewSet(GenericViewSet):
 class ShopingCartViewSet(GenericViewSet):
     permission_classes = (perm.IsAuthenticated,)
     serializer_class = RecipeSerializer
-    lookup_field = 'recipe'
+    queryset = Recipe.objects.all()
     lookup_url_kwarg = 'pk'
 
     def shopping_cart(self, request, pk):
-        serializer = ShopingCartSerializer(
-            data={self.lookup_field: pk},
-            context=self.get_serializer_context()
-        )
-        serializer.is_valid(raise_exception=True)
-        instance = serializer.save()
-        serializer = self.get_serializer(instance=instance.recipe)
+        recipe = self.get_object()
+        cart = self.get_cart()
+        cart.recipe.add(recipe)
+        serializer = self.get_serializer(instance=recipe)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
     def destroy(self, request, pk):
-        self.get_object().delete()
+        recipe = self.get_object()
+        cart = self.get_cart()
+        cart.recipe.remove(recipe)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    def download_shopping_cart(self, *args, **kwargs):
+    def download_shopping_cart(self, request, *args, **kwargs):
         file = tempfile.NamedTemporaryFile()
         file.write(self.get_content())
         file.seek(0)
         return HttpResponse(file, content_type='application/txt')
 
     def get_content(self):
-        user = self.request.user
-        recipes = user.cart.all().values('recipe')
-        cart = Ingredient.objects.filter(
-            counts__recipe__in=recipes
-        ).annotate(amount=Sum('counts__amount'))
+        cart = self.get_cart()
+        ingredients = cart.recipe.values_list(
+            'ingredients__ingredient__name',
+            'ingredients__ingredient__measurement_unit'
+        ).annotate(Sum('ingredients__amount'))
         content = ''
-        for ingr in cart:
-            content += f'{ingr.name} {ingr.amount} {ingr.measurement_unit};\n'
+        for ingredient in ingredients:
+            content += f'{ingredient[0]} {ingredient[2]} {ingredient[1]};\n'
         return bytes(content, 'utf-8')
 
-    def get_queryset(self):
-        return self.request.user.cart.all()
+    def get_cart(self) -> ShoppingCart:
+        o, _ = ShoppingCart.objects.get_or_create(user=self.request.user)
+        return o
 
 
 class TagViewSet(mixins.ListModelMixin,
@@ -112,6 +112,3 @@ class RecipeViewSet(ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
-
-    def get_object(self):
-        return super().get_object()

@@ -19,8 +19,8 @@ urlpatterns = [
         ShopingCartViewSet.as_view({'get': 'download_shopping_cart'})
     ),
     path(
-        'recipe/<int:pk>/shopping_cart/',
+        'recipes/<int:pk>/shopping_cart/',
         ShopingCartViewSet.as_view(
-            {'get': 'shopping_cart', 'delete': 'destroy'})
+            {'post': 'shopping_cart', 'delete': 'destroy'})
     ),
 ] + router.urls

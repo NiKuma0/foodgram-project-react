@@ -26,31 +26,6 @@ class FavoriteSerializer(serializers.ModelSerializer):
         )
 
 
-class ShopingCartSerializer(serializers.ModelSerializer):
-    user = serializers.HiddenField(
-        default=serializers.CurrentUserDefault()
-    )
-
-    class Meta:
-        model = ShoppingCart
-        fields = '__all__'
-        validators = (
-            valid.UniqueTogetherValidator(
-                ShoppingCart.objects.all(),
-                ('user', 'recipe'),
-                _('You already have this recipe in your shop cart')
-            ),
-        )
-
-    @property
-    def data(self):
-        return RecipeSerializer(
-            instance=self.validated_data['recipe'],
-            fields=('id', 'name', 'image', 'cooking_time'),
-            context=self.context
-        ).data
-
-
 class TagSerializer(serializers.ModelSerializer):
     class Meta:
         model = Tag
@@ -73,18 +48,8 @@ class CountSerializer(serializers.Serializer):
     amount = serializers.IntegerField(required=True)
 
     def create(self, validated_data):
-        ingredient = validated_data['id']
-        amount = validated_data['amount']
-        return Count.objects.create(amount=amount, ingredient=ingredient)
-
-    def to_representation(self, count):
-        ingr = count.ingredient
-        return {
-            'id': ingr.id,
-            'name': ingr.name,
-            'measurement_unit': ingr.measurement_unit,
-            'amount': count.amount
-        }
+        ingredient = validated_data.pop('id')
+        return Count.objects.create(ingredient=ingredient, **validated_data)
 
 
 class VerboseRecipeSerializer(serializers.ModelSerializer):
@@ -125,9 +90,13 @@ class VerboseRecipeSerializer(serializers.ModelSerializer):
     def get_is_in_shopping_cart(self, recipe):
         request = self.context.get('request')
         user = getattr(request, 'user', None)
-        if user is None or not user.is_authenticated:
-            return False
-        return ShoppingCart.objects.filter(recipe=recipe, user=user).exists()
+        return ShoppingCart.objects.filter(
+            recipe=recipe, user=user.id
+        ).exists()
+
+    def get_ingredients(self, recipe):
+        ser = CountSerializer(instance=recipe.ingredients.all(), many=True)
+        return ser.data
 
 
 class ListRecipeSerializer(serializers.ListSerializer):

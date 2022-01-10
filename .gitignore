@@ -1,4 +1,5 @@
 # My settigs for django
+Makefile
 backend/*static/
 backend/*media/
 .vscode/

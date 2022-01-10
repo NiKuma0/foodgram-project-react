@@ -3,7 +3,6 @@ from rest_framework.viewsets import GenericViewSet
 from rest_framework import status, permissions as perm
 from rest_framework.response import Response
 from rest_framework.request import Request
-from rest_framework.decorators import action
 
 from users.serializers import SubSerializer, VerboseUserSerializer
 
@@ -37,11 +36,13 @@ class SubscribeViewSet(GenericViewSet):
     def subscriptions(self, request: Request):
         queryset = [sub.subscribed for sub in request.user.subscribed.all()]
         queryset = self.filter_queryset(queryset)
-        page = self.paginate_queryset(queryset) or queryset
-        serializer = self.get_serializer(
-            page, many=True,
-            context=self.get_serializer_context()
-        )
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
     def get_queryset(self):

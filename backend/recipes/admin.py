@@ -42,5 +42,5 @@ class AdminFavorite(admin.ModelAdmin):
 
 @admin.register(ShoppingCart)
 class AdminShoppingCart(admin.ModelAdmin):
-    list_display = ('user', 'recipe')
+    list_display = ('user',)
     search_field = ('user',)

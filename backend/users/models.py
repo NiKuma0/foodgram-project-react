@@ -5,7 +5,10 @@ from django.utils.translation import gettext_lazy as _
 
 
 class User(AbstractUser):
-    email = models.EmailField(_('email address'), unique=True)
+    email = models.EmailField(
+        _('email address'), unique=True,
+        help_text='Адрес электронной почты'
+    )
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ('username',)
 
@@ -14,12 +17,14 @@ class Subcribe(models.Model):
     subscriber = models.ForeignKey(
         User, on_delete=models.CASCADE,
         related_name='subscribed',
-        verbose_name=_('subscriber')
+        verbose_name=_('subscriber'),
+        help_text='Подписчик'
     )
     subscribed = models.ForeignKey(
         User, on_delete=models.CASCADE,
         related_name='subscribers',
-        verbose_name=_('subscribed')
+        verbose_name=_('subscribed'),
+        help_text='Подписан'
     )
 
     class Meta:

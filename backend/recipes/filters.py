@@ -5,7 +5,7 @@ from recipes.models import Recipe, Tag
 
 
 class RecipeFilter(FilterSet):
-    is_favorited = filters.BooleanFilter(
+    is_favorited = filters.NumberFilter(
         method='get_favorite', label='is favorited'
     )
     tags = filters.ModelMultipleChoiceFilter(
@@ -13,7 +13,7 @@ class RecipeFilter(FilterSet):
         to_field_name='slug',
         queryset=Tag.objects.all()
     )
-    is_in_shopping_cart = filters.BooleanFilter(
+    is_in_shopping_cart = filters.NumberFilter(
         method='get_shop'
     )
 
@@ -22,10 +22,10 @@ class RecipeFilter(FilterSet):
         fields = ('author', 'tags')
 
     def get_favorite(self, queryset, name, value):
-        if not value:
-            return queryset
-        user = self.request.user
-        return queryset.filter(likes__user=user.id)
+        if value == 1:
+            user = self.request.user
+            return queryset.filter(likes__user=user.id)
+        return queryset
 
     def get_shop(self, queryset, name, value):
         if not value:
