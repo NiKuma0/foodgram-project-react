@@ -2,7 +2,7 @@ from django.utils.translation import gettext_lazy as _
 from rest_framework import serializers, validators as valid
 from drf_base64.fields import Base64ImageField
 
-from recipes.fields import TagField, SerializerField
+from recipes.fields import TagField, SerializerField, ImageBase64
 from recipes.models import (
     Recipe, Count, Ingredient,
     Favorite, ShoppingCart, Tag
@@ -57,7 +57,7 @@ class VerboseRecipeSerializer(serializers.ModelSerializer):
         queryset=Tag.objects.all(), child=TagSerializer(), many=True
     )
     author = serializers.SerializerMethodField(read_only=True)
-    image = Base64ImageField(required=True)
+    image = ImageBase64(required=True)
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
     ingredients = SerializerField(
@@ -83,9 +83,7 @@ class VerboseRecipeSerializer(serializers.ModelSerializer):
     def get_is_favorited(self, recipe):
         request = self.context.get('request')
         user = getattr(request, 'user', None)
-        if user is None or not user.is_authenticated:
-            return False
-        return Favorite.objects.filter(recipes=recipe, user=user).exists()
+        return Favorite.objects.filter(recipes=recipe, user=user.id).exists()
 
     def get_is_in_shopping_cart(self, recipe):
         request = self.context.get('request')

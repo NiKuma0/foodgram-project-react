@@ -1,7 +1,16 @@
-from pprint import pprint
+import os
+from urllib.parse import urljoin
 
 from rest_framework import serializers
+from drf_base64.fields import Base64ImageField
 
+
+class ImageBase64(Base64ImageField):
+    def to_representation(self, value):
+        if value is None:
+            return None
+        root_url = os.getenv('HOST') or 'http://localhost/'
+        return urljoin(root_url, value.url)
 
 class TagField(serializers.PrimaryKeyRelatedField):
     def __init__(self, child, *args, **kwargs):
