@@ -12,6 +12,7 @@ class ImageBase64(Base64ImageField):
         root_url = os.getenv('HOST') or 'http://localhost/'
         return urljoin(root_url, value.url)
 
+
 class TagField(serializers.PrimaryKeyRelatedField):
     def __init__(self, child, *args, **kwargs):
         self.child = child

@@ -9,7 +9,7 @@ from recipes.models import (
 @admin.register(Tag)
 class AdminTag(admin.ModelAdmin):
     list_display = ('name', 'slug', 'color', 'id')
-    search_field = ('name', 'slug')
+    search_fields = ('name', 'slug')
     prepopulated_fields = {'slug': ('name',), }
 
 
@@ -18,29 +18,32 @@ class AdminRecipe(admin.ModelAdmin):
     list_display = (
         'author', 'name', 'id'
     )
-    search_field = ('name', 'text')
+    search_fields = ('name', 'text', 'author__email', 'author__username')
     filter_field = ('author', 'cooking_time')
 
 
 @admin.register(Ingredient)
 class AdminIngredient(admin.ModelAdmin):
     list_display = ('name', 'measurement_unit', 'id')
-    search_field = ('name',)
+    search_fields = (
+        'name', 'recipe__name',
+        'recipe__author__email', 'recipe__author__username'
+    )
 
 
 @admin.register(Count)
 class AdminCount(admin.ModelAdmin):
     list_display = ('ingredient', 'amount', 'id')
-    search_field = ('ingredient',)
+    search_fields = ('ingredient',)
 
 
 @admin.register(Favorite)
 class AdminFavorite(admin.ModelAdmin):
     list_display = ('user', 'recipes')
-    search_field = ('user',)
+    search_fields = ('user__email', 'user__username', 'recipes__name')
 
 
 @admin.register(ShoppingCart)
 class AdminShoppingCart(admin.ModelAdmin):
     list_display = ('user',)
-    search_field = ('user',)
+    search_fields = ('user__email', 'user__username')

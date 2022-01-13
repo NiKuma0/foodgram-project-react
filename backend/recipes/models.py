@@ -10,14 +10,18 @@ class Tag(models.Model):
     name = models.CharField(
         _('name'), max_length=200, unique=True, help_text='Назание тэг'
     )
-    color = ColorField(unique=True, format='hex', help_text='Цвет тэга')
+    color = ColorField(
+        'цвет', unique=True,
+        format='hex', help_text='Цвет тэга'
+    )
     slug = models.SlugField(
-        _('slug'), max_length=200, help_text='Краткое название тэга'
+        'уникальный ключ', max_length=200,
+        help_text='Краткое название тэга'
     )
 
     class Meta:
-        verbose_name = 'Tag'
-        verbose_name_plural = 'Tags'
+        verbose_name = 'Тэг'
+        verbose_name_plural = 'Тэги'
 
     def __str__(self) -> str:
         return str(self.slug)
@@ -25,16 +29,16 @@ class Tag(models.Model):
 
 class Ingredient(models.Model):
     name = models.CharField(
-        _('name'), max_length=200, unique=True,
+        'имя', max_length=200, unique=True,
         help_text='Название ингредиента'
     )
     measurement_unit = models.CharField(
-        _('unit'), max_length=50, help_text='Единица измерения'
+        'единица', max_length=50, help_text='Единица измерения'
     )
 
     class Meta:
-        verbose_name = _('Ingredient')
-        verbose_name_plural = _('Ingredients')
+        verbose_name = 'Ингредиент'
+        verbose_name_plural = 'Ингредиенты'
 
     def __str__(self) -> str:
         return self.name
@@ -42,16 +46,16 @@ class Ingredient(models.Model):
 
 class Recipe(models.Model):
     author = models.ForeignKey(
-        User, verbose_name=_('author'),
+        User, verbose_name='автор',
         on_delete=models.CASCADE, related_name='recipes',
         help_text='автор'
     )
     tags = models.ManyToManyField(
-        Tag, verbose_name=_('tags'), related_name='recipes',
+        Tag, verbose_name='тэги', related_name='recipes',
         help_text='Тэг'
     )
     image = models.ImageField(
-        _('image'), upload_to='api/recipes/',
+        'картинка', upload_to='api/recipes/',
         help_text='Картинка'
     )
     name = models.CharField(
@@ -59,10 +63,10 @@ class Recipe(models.Model):
         help_text='Название рецепта'
     )
     text = models.TextField(
-        _('text'), help_text='Описание'
+        'текст', help_text='Описание'
     )
-    cooking_time = models.IntegerField(
-        _('cooking time'), help_text='Время готовки'
+    cooking_time = models.PositiveSmallIntegerField(
+        'Время готовки', help_text='Время готовки'
     )
 
     class Meta:
@@ -76,9 +80,10 @@ class Recipe(models.Model):
 class Count(models.Model):
     ingredient = models.ForeignKey(
         Ingredient, related_name='counts',
-        on_delete=models.CASCADE, help_text='Ингредиент'
+        on_delete=models.CASCADE, help_text='Ингредиент',
+        verbose_name='ингредиент'
     )
-    amount = models.PositiveIntegerField(help_text='Количество')
+    amount = models.PositiveIntegerField('Количество', help_text='Количество')
     recipe = models.ForeignKey(
         Recipe, on_delete=models.CASCADE,
         related_name='ingredients', help_text='Рецепт',
@@ -100,7 +105,7 @@ class Favorite(models.Model):
         help_text='Пользаватель'
     )
     recipes = models.ForeignKey(
-        Recipe, verbose_name=_('recipes'),
+        Recipe, verbose_name='Рецепт',
         on_delete=models.CASCADE, related_name='likes',
         help_text='Рецепт'
     )
@@ -111,7 +116,8 @@ class Favorite(models.Model):
                 fields=('user', 'recipes'), name='favorite_unique_link'
             ),
         )
-        verbose_name = _('Favorite')
+        verbose_name = 'Избранное'
+        verbose_name_plural = 'Избранные'
 
     def __str__(self) -> str:
         return f'{self.user.email} {self.recipes.name}'
@@ -124,12 +130,13 @@ class ShoppingCart(models.Model):
         help_text='Пользователь'
     )
     recipe = models.ManyToManyField(
-        Recipe, verbose_name=_('recipe'),
+        Recipe, verbose_name='Рецепт',
         related_name='shop', help_text='Рецепт'
     )
 
     class Meta:
-        verbose_name = _('Shopping cart')
+        verbose_name = 'Карзина'
+        verbose_name_plural = 'Карзины'
 
     def __str__(self) -> str:
         return f'{self.user.email} * {self.recipe}'

@@ -13,6 +13,7 @@ from recipes.serializers import (
     FavoriteSerializer, VerboseRecipeSerializer
 )
 from recipes.filters import RecipeFilter
+from recipes.permissions import CreaterCanChange
 from recipes.models import (
     Tag, Recipe, Ingredient, ShoppingCart
 )
@@ -105,7 +106,7 @@ class IngredientViewSet(mixins.ListModelMixin,
 
 class RecipeViewSet(ModelViewSet):
     queryset = Recipe.objects.all()
-    permission_classes = (perm.IsAuthenticatedOrReadOnly,)
+    permission_classes = (CreaterCanChange,)
     serializer_class = VerboseRecipeSerializer
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter

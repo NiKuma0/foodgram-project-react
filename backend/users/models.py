@@ -17,13 +17,13 @@ class Subcribe(models.Model):
     subscriber = models.ForeignKey(
         User, on_delete=models.CASCADE,
         related_name='subscribed',
-        verbose_name=_('subscriber'),
+        verbose_name='подписчик',
         help_text='Подписчик'
     )
     subscribed = models.ForeignKey(
         User, on_delete=models.CASCADE,
         related_name='subscribers',
-        verbose_name=_('subscribed'),
+        verbose_name='подписан',
         help_text='Подписан'
     )
 
@@ -36,8 +36,8 @@ class Subcribe(models.Model):
                 name='cannot_subscribe_to_self',
             ),
         )
-        verbose_name = _('Subscribe model')
-        verbose_name_plural = _('Subscribe models')
+        verbose_name = 'Модель подписки'
+        verbose_name_plural = 'Модель подписок'
 
     def __str__(self) -> str:
         return f'{self.subscriber} -> {self.subscribed}'

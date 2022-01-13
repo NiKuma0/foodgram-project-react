@@ -43,9 +43,16 @@ class CountSerializer(serializers.Serializer):
     id = serializers.PrimaryKeyRelatedField(
         queryset=Ingredient.objects.all()
     )
-    name = serializers.CharField(read_only=True)
-    measurement_unit = serializers.CharField(read_only=True)
-    amount = serializers.IntegerField(required=True)
+    amount = serializers.IntegerField(min_value=0, required=True)
+
+    def to_representation(self, count):
+        ingredient = count.ingredient
+        return {
+            'id': ingredient.id,
+            'name': ingredient.name,
+            'measurement_unit': ingredient.measurement_unit,
+            'amount': count.amount
+        }
 
     def create(self, validated_data):
         ingredient = validated_data.pop('id')
@@ -111,6 +118,8 @@ class ListRecipeSerializer(serializers.ListSerializer):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
+    image = ImageBase64()
+
     class Meta:
         model = Recipe
         list_serializer_class = ListRecipeSerializer
