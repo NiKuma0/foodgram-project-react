@@ -9,7 +9,8 @@ class ImageBase64(Base64ImageField):
     def to_representation(self, value):
         if value is None:
             return None
-        root_url = os.getenv('HOST') or 'http://localhost/'
+        host = os.getenv('HOST')
+        root_url = f'https://{host}/' if host else 'http://localhost/'
         return urljoin(root_url, value.url)
 
 

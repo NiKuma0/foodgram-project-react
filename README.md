@@ -27,14 +27,20 @@ docker
 3. Теперь, в корне проекта создайте файл `.env` - здесь будут основные настройки. 
 4. Заполните его примерно так:
     ```shell
+    # Движок django для БД
     DB_ENGINE=django.db.backends.postgresql 
+    # Имя БД
     DB_NAME=postgres
+    # Имя пользователя и пароль postgres 
     POSTGRES_USER=postgres
     POSTGRES_PASSWORD=postgres
+    # Название хоста и порт БД
     DB_HOST=db
     DB_PORT=5432
+    # Ключ для шифрования django (заполните это поле!)
     SECRET_KEY=''
-    HOST='http://localhost/'
+    # Хост вашего сервера
+    HOST='localhost'
     ```
 5. Запускаем!
     ```shell
