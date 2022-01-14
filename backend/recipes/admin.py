@@ -1,5 +1,6 @@
 from django.contrib import admin
 
+from recipes.forms import IngredientsInline
 from recipes.models import (
     Tag, Recipe, Ingredient,
     Count, Favorite, ShoppingCart
@@ -16,8 +17,9 @@ class AdminTag(admin.ModelAdmin):
 @admin.register(Recipe)
 class AdminRecipe(admin.ModelAdmin):
     list_display = (
-        'author', 'name', 'id'
+        'author', 'name', 'id',
     )
+    inlines = (IngredientsInline,)
     search_fields = ('name', 'text', 'author__email', 'author__username')
     filter_field = ('author', 'cooking_time')
 
