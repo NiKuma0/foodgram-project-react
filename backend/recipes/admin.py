@@ -28,8 +28,9 @@ class AdminRecipe(admin.ModelAdmin):
 class AdminIngredient(admin.ModelAdmin):
     list_display = ('name', 'measurement_unit', 'id')
     search_fields = (
-        'name', 'recipe__name',
-        'recipe__author__email', 'recipe__author__username'
+        'name', 'counts__recipe__name',
+        'counts__recipe__author__email',
+        'counts__recipe__author__username'
     )
 
 
