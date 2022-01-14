@@ -130,8 +130,8 @@ AUTH_USER_MODEL = 'users.User'
 # https://www.django-rest-framework.org/
 
 REST_FRAMEWORK = {
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
-    'PAGE_SIZE': 100,
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 6,
     'NON_FIELD_ERRORS_KEY': 'errors',
     'SEARCH_PARAM': 'name',
     'DEFAULT_AUTHENTICATION_CLASSES': (
