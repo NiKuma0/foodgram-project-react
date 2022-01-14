@@ -7,7 +7,7 @@ from drf_base64.fields import Base64ImageField
 
 class ImageBase64(Base64ImageField):
     def to_representation(self, value):
-        if value is None:
+        if not value:
             return None
         host = os.getenv('HOST')
         root_url = f'https://{host}/' if host else 'http://localhost/'
